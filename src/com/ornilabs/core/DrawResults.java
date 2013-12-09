@@ -9,6 +9,8 @@ import java.util.HashMap;
 
 import javax.swing.JPanel;
 
+import com.ornilabs.main.Launch;
+
 public class DrawResults extends JPanel{
 
 	/**
@@ -31,15 +33,8 @@ public class DrawResults extends JPanel{
 
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		
+
 		Graphics2D g2d = (Graphics2D) g;
-		g2d.setColor(Color.BLUE);
-		Ellipse2D.Double circle = new Ellipse2D.Double(robot.getPosition()[0]-robot.getRobotRadius(), robot.getPosition()[1]-robot.getRobotRadius(), robot.getRobotRadius()*2, robot.getRobotRadius()*2);
-		g2d.fill(circle);
-		
-		g2d.setColor(Color.RED);
-		g2d.drawLine((int)robot.getPosition()[0], (int)robot.getPosition()[1], (int)(robot.getPosition()[0]+robot.getRobotRadius()*Math.cos(robot.getAngle())), (int)(robot.getPosition()[1]+robot.getRobotRadius()*Math.sin(robot.getAngle())));
-		
 		for(Double[] set : results.keySet()) {
 			int x = set[0].intValue();
 			int y = set[1].intValue();
@@ -50,6 +45,15 @@ public class DrawResults extends JPanel{
 			Rectangle2D.Double rect= new Rectangle2D.Double(xSize/2+x-pas/2, ySize/2+y-pas/2, pas, pas);
 			g2d.fill(rect);
 		}
+		
+		
+		g2d.setColor(Color.BLUE);
+		Ellipse2D.Double circle = new Ellipse2D.Double(robot.getPosition()[0]-robot.getRobotRadius(), robot.getPosition()[1]-robot.getRobotRadius(), robot.getRobotRadius()*2, robot.getRobotRadius()*2);
+		g2d.fill(circle);
+		
+		g2d.setColor(Color.RED);
+		g2d.drawLine((int)robot.getPosition()[0], (int)robot.getPosition()[1], (int)(robot.getPosition()[0]+robot.getRobotRadius()*Math.cos(robot.getAngle())), (int)(robot.getPosition()[1]+robot.getRobotRadius()*Math.sin(robot.getAngle())));
+		
 		
 	}
 }

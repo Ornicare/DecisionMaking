@@ -8,7 +8,7 @@ public abstract class Neuron extends Observable implements Observer, INeuron{
 
 	protected Map<INeuron,Double> predecessors;
 	protected double out;
-	protected double learningRate = 0.5;
+	protected double learningRate = 0.01;
 	
 	public Neuron(Map<INeuron,Double> predecessors) {
 		this.predecessors = predecessors;

@@ -10,6 +10,7 @@ import javax.swing.JFrame;
 
 import com.ornilabs.core.Board;
 import com.ornilabs.core.CircularRobot;
+import com.ornilabs.core.DrawF;
 import com.ornilabs.core.DrawResults;
 import com.ornilabs.core.GraphicBoard;
 import com.ornilabs.core.IRobot;
@@ -25,6 +26,15 @@ public class Launch {
 		
 		double xSize = 1000;
 		double ySize = 1000;
+		
+		
+//		//draw f
+//		DrawF drawF = new DrawF(xSize, ySize);
+//		JFrame frame1 = new JFrame();
+//		frame1.setBounds(0,0,(int)xSize,(int)ySize);
+//		frame1.add(drawF);
+//		frame1.setVisible(true);
+//		
 		
 		IRobot robot = new CircularRobot(100, 200, 0, 0.1, 10, Integer.MAX_VALUE);
 		IRobot robotCible = new CircularRobot(100, 200, 0, 0.1, 10, 10);
@@ -50,18 +60,21 @@ public class Launch {
 		for(int xDiff = (int) -xSize ; xDiff < xSize ; xDiff+=xSize/100) {
 			for(int yDiff = (int) -ySize ; yDiff < ySize ; yDiff+=ySize/100) {
 				for(double angle = 0 ; angle < 360 ; angle+=360/100.0) {
-					double distance = Math.sqrt(xDiff*xDiff+yDiff*yDiff);
-					double xCoinc = distance*Math.cos(angle);
-					double yCoinc = distance*Math.sin(angle);
-					
-					double[] coinc = {xCoinc,yCoinc};
-					double[] positionCible = {xDiff,yDiff};
+//					double distance = Math.sqrt(xDiff*xDiff+yDiff*yDiff);
+//					double xCoinc = distance*Math.cos(angle);
+//					double yCoinc = distance*Math.sin(angle);
+//					
+//					double[] coinc = {xCoinc,yCoinc};
+//					double[] positionCible = {xDiff,yDiff};
 					
 					Double[] set = {(double) xDiff,(double) yDiff,angle};
 					Boolean[] result = {false,false,false,false,false};
-					if(squareDistance(coinc, positionCible)<robot.getRobotRadius()*robot.getRobotRadius()) {
-						result[4] = true;
-					}
+					
+					//plan transformé
+					if(xDiff<0 && Math.abs(yDiff)<robot.getRobotRadius()) result[4] = true;
+//					if(squareDistance(coinc, positionCible)<robot.getRobotRadius()*robot.getRobotRadius()) {
+//						result[4] = true;
+//					}
 
 					learningSet.put(set, result);
 					
@@ -94,15 +107,17 @@ public class Launch {
 //		CalculationNeuron down = new CalculationNeuron(inputLayer);
 //		CalculationNeuron left = new CalculationNeuron(inputLayer);
 //		CalculationNeuron right = new CalculationNeuron(inputLayer);
-		CalculationNeuron space01 = new CalculationNeuron(inputLayer);
-		CalculationNeuron space02 = new CalculationNeuron(inputLayer);
 		
-		Map<INeuron,Double> layer0 = new HashMap<INeuron,Double>();
-		layer0.put(space01, Math.random()-Math.random());
-		layer0.put(space02, Math.random()-Math.random());
+		
+//		CalculationNeuron space01 = new CalculationNeuron(inputLayer);
+//		CalculationNeuron space02 = new CalculationNeuron(inputLayer);
+//		
+//		Map<INeuron,Double> layer0 = new HashMap<INeuron,Double>();
+//		layer0.put(space01, Math.random()-Math.random());
+//		layer0.put(space02, Math.random()-Math.random());
 		
 		//space  11
-		CalculationNeuron space = new CalculationNeuron(layer0);
+		CalculationNeuron space = new CalculationNeuron(inputLayer);
 		
 		List<INeuron> outputLayer = new ArrayList<INeuron>();
 		outputLayer.add(space);
@@ -111,8 +126,9 @@ public class Launch {
 		//test
 		int failures = 0;
 		for(Double[] set : learningSet.keySet()) {
-			inputXDiff.setValue(set[0]);
-			inputYDiff.setValue(set[1]);
+			double[] resultsCoord = f(set[0],set[1],robotCible.getRobotRadius());
+			inputXDiff.setValue(resultsCoord[0]);
+			inputYDiff.setValue(resultsCoord[1]);
 			computerAngle.setValue(set[2]);
 			
 			//collect results
@@ -128,8 +144,9 @@ public class Launch {
 		
 		//learning
 		for(Double[] set : learningSet.keySet()) {
-			inputXDiff.setValue(set[0]);
-			inputYDiff.setValue(set[1]);
+			double[] resultsCoord = f(set[0],set[1],robotCible.getRobotRadius());
+			inputXDiff.setValue(resultsCoord[0]);
+			inputYDiff.setValue(resultsCoord[1]);
 			computerAngle.setValue(set[2]);
 			
 //			System.out.println(set[0]+" "+set[1]+" "+set[2]+"-"+space.getOut());
@@ -145,8 +162,8 @@ public class Launch {
 				if(result) erreur = -1-space.getOut();
 				
 				space.learn(erreur);
-				space01.learn(erreur);
-				space02.learn(erreur);
+//				space01.learn(erreur);
+//				space02.learn(erreur);
 				
 			}
 		}
@@ -154,8 +171,9 @@ public class Launch {
 		//retest
 		failures = 0;
 		for(Double[] set : learningSet.keySet()) {
-			inputXDiff.setValue(set[0]);
-			inputYDiff.setValue(set[1]);
+			double[] resultsCoord = f(set[0],set[1],robotCible.getRobotRadius());
+			inputXDiff.setValue(resultsCoord[0]);
+			inputYDiff.setValue(resultsCoord[1]);
 			computerAngle.setValue(set[2]);
 			
 			//collect results
@@ -184,6 +202,57 @@ public class Launch {
 
 //		GraphicBoard graphicBoard = new GraphicBoard();
 //		new Board(robots, xSize, ySize, graphicBoard, robot, inputIa, outputLayer);
+	}
+	
+	public static double[] f(double x, double y, double a) {
+		
+		double[] result = {x,y};
+		//Shoot zone
+		if(x>0 && Math.abs(y)<a) {
+			result[1] = Math.tan(y/a*Math.PI/2);
+		}
+		else if(x>0 && y>=a) {
+			result[0] = -x;
+			result[1] = Math.atan(y-a)*a/Math.PI*2;
+		}
+		else if(x>0 && y<=-a) {
+			result[0] = -x;
+			result[1] = Math.atan(y+a)*a/Math.PI*2;
+		}
+		else if(x<0 && y>0) {
+			result[1] = y+a;
+		}
+		else if(x<0 && y<0) {
+			result[1] = y-a;
+		}
+		return result;
+	}
+	
+	public static double[] f_1(double x, double y, double a) {
+		double[] result = {x,y};
+		if(x>0) {
+			result[1] =  Math.atan(x)*a/Math.PI*2;
+		}
+		else if(x<0) {
+			if(Math.abs(y)<a) {
+				result[0] = -x;
+				if(y>0) {
+					result[1] =  Math.atan(y)*a/Math.PI*2+a;
+				}
+				else if(y<0){
+					result[1] =  Math.atan(y)*a/Math.PI*2-a;
+				}
+			}
+			else {
+				if(y>0) {
+					result[1] = y-a;
+				}
+				else {
+					result[1] = y+a;
+				}
+			}
+		}
+		return result;
 	}
 
 	private static double squareDistance(double[] p1, double[] p2) {
