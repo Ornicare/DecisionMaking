@@ -28,7 +28,7 @@ public class DrawResults extends JPanel{
 		this.pas = pas;
 		this.xSize =xSize;
 		this.ySize = ySize;
-		this.robot = new CircularRobot(xSize/2, ySize/2, 0, 0, 0, 100);
+		this.robot = new CircularRobot(xSize/2, ySize/2, 0, 0, 0, 100, 20);
 	}
 
 	protected void paintComponent(Graphics g) {
@@ -38,12 +38,14 @@ public class DrawResults extends JPanel{
 		for(Double[] set : results.keySet()) {
 			int x = set[0].intValue();
 			int y = set[1].intValue();
+
+			System.out.println(x+" "+y);
 			
 			double[] f = Launch.f(set[0],set[1],robot.getRobotRadius());
 //			double[] input = {(double) f[0],(double) f[1]};//,angle};
 			
 			double[] input = {set[0],set[1]};
-			double[] result2 = Launch.mlp.classify(input);
+			double[] result2 = Launch.managedEntities.get(0).getBrain().classify(input);
 			
 			double result = result2[0];//results.get(set);
 			

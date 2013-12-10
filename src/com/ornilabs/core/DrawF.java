@@ -24,7 +24,7 @@ public class DrawF extends JPanel{
 	public DrawF(double xSize, double ySize) {
 		this.xSize =xSize;
 		this.ySize = ySize;
-		this.robot = new CircularRobot(xSize/2, ySize/2, 0, 0, 0, 100);
+		this.robot = new CircularRobot(xSize/2, ySize/2, 0, 0, 0, 100, 20);
 	}
 
 	protected void paintComponent(Graphics g) {

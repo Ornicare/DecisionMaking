@@ -7,6 +7,7 @@ import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 public class BoardPanel extends JPanel{
@@ -16,14 +17,19 @@ public class BoardPanel extends JPanel{
 	 */
 	private static final long serialVersionUID = -5082827415095204466L;
 	private IBoard board;
-	private List<IRobot> fireringRobots = new ArrayList<IRobot>();
+	public static List<IRobot> fireringRobots = new ArrayList<IRobot>();
 
 	public BoardPanel(IBoard board) {
 		this.board = board;
+		this.setBackground(Color.white);
 	}
 
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
+		
+		double min = 1;
+		double max = 0;
+		double moy = 0;
 		
 		Graphics2D g2d = (Graphics2D) g;
 		for(IRobot robot : board.getRobots()) {
@@ -55,13 +61,32 @@ public class BoardPanel extends JPanel{
 			g2d.setColor(Color.RED);
 			if(maxLife!=life)g2d.drawLine((int)(xS+(life/maxLife)*robot.getRobotRadius()*2),yS, (int)(xS+robot.getRobotRadius()*2), yS);
 		
+			double lastScore = robot.getBrain().getScore();
+			min = min > lastScore ? lastScore : min;
+			max = max < lastScore ? lastScore : max;
+			moy+=lastScore;
+			try{
+				g2d.setColor(Color.DARK_GRAY);
+				g2d.drawString((""+((int)(lastScore*100)/100.0)), (int)robot.getPosition()[0], (int)(robot.getPosition()[1]-1.3*robot.getRobotRadius()));
+				g2d.drawString(""+robot.getLife()+"/"+robot.getMaxLife(), (int)robot.getPosition()[0], (int)(robot.getPosition()[1]-1.3*robot.getRobotRadius()-10));
+				g2d.drawString(""+robot.getBrain().score, (int)robot.getPosition()[0], (int)(robot.getPosition()[1]-1.3*robot.getRobotRadius()-20));
+			}catch(Exception e) {System.out.println("rol");}
+			
 		}
+		moy = moy/board.getRobots().size();
+
+		g2d.setColor(Color.red);
+		g2d.drawString("min="+min,0,1000);
+		g2d.setColor(Color.green);
+		g2d.drawString("max="+max,0,1020);
+		g2d.setColor(Color.BLUE);
+		g2d.drawString("moy="+moy,0,1040);
 		
 		fireringRobots.removeAll(fireringRobots);
 
 	}
 
 	public void setFirering(List<IRobot> fireringRobots) {
-		this.fireringRobots  = fireringRobots;
+		BoardPanel.fireringRobots  = fireringRobots;
 	}
 }

@@ -190,7 +190,7 @@ public class MultiLayerPerceptron{
 	 * @param input Input to be classified
 	 * @return The classification of the input
 	 */
-	public double[] classify(double[] input) {
+	public double[] classify(double... input) {
 		for(int i = 0; i < input.length; i++){
 			this.input.get(i).input(input[i]);
 		}

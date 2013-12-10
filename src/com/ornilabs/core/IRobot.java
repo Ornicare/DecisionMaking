@@ -1,5 +1,7 @@
 package com.ornilabs.core;
 
+import com.ornilabs.neurons.Entity;
+
 public interface IRobot {
 	public boolean turn(double angle);
 	public double accel(double dir);
@@ -15,4 +17,7 @@ public interface IRobot {
 	public int getMaxLife();
 	boolean isFirering();
 	void setFirering(boolean firering);
+	public double getMaxAccel();
+	public void registerBrain(Entity entity);
+	public Entity getBrain();
 }

@@ -18,7 +18,7 @@ public class GraphicBoard extends JFrame implements IGraphicBoard, KeyListener {
 	private BoardPanel panel;
 	private IRobot userRobot;
 	private IBoard board;
-	private double stepAngle = 1 / 360.0 * Math.PI * 2;
+	public static double stepAngle = 1 / 360.0 * Math.PI * 2;
 	private boolean[] keys = { false, false, false, false, false };
 
 	public GraphicBoard() {
@@ -40,11 +40,14 @@ public class GraphicBoard extends JFrame implements IGraphicBoard, KeyListener {
 		double height = screenSize.getHeight();
 
 		setBounds((int) (width / 2 - board.getXSize() / 2),
-				((int) height / 2 - board.getYSize() / 2), board.getXSize(),
-				board.getYSize());
+				((int) height / 2 - board.getYSize() / 2), board.getXSize()+100,
+				board.getYSize()+100);
 
 		panel = new BoardPanel(board);
-		this.add(panel);
+//		getContentPane().setLayout(null);
+//
+		getContentPane().add(panel);
+//		panel.setLocation(50, 50);
 		this.setVisible(true);
 	}
 
@@ -71,6 +74,7 @@ public class GraphicBoard extends JFrame implements IGraphicBoard, KeyListener {
 
 	@Override
 	public void keyPressed(KeyEvent e) {
+		if(userRobot==null) return;
 		switch (e.getKeyCode()) {
 		case KeyEvent.VK_UP:
 			keys[0] = true;
@@ -92,6 +96,7 @@ public class GraphicBoard extends JFrame implements IGraphicBoard, KeyListener {
 
 	@Override
 	public void keyReleased(KeyEvent e) {
+		if(userRobot==null) return;
 		switch (e.getKeyCode()) {
 		case KeyEvent.VK_UP:
 			keys[0] = false;

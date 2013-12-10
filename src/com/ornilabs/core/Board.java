@@ -9,7 +9,9 @@ import java.util.Observer;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.ornilabs.main.Launch;
 import com.ornilabs.neurons.CalculationNeuron;
+import com.ornilabs.neurons.Entity;
 import com.ornilabs.neurons.INeuron;
 import com.ornilabs.neurons.InputNeuron;
 
@@ -20,17 +22,17 @@ public class Board extends TimerTask implements IBoard, Observer{
 	private IGraphicBoard graphicBoard;
 	private Timer timer;
 	private List<IRobot> fireringRobots = new ArrayList<IRobot>();
-	private List<INeuron> iaIn;
-	private List<INeuron> iaOut;
+//	private List<INeuron> iaIn;
+//	private List<INeuron> iaOut;
 	private IRobot userRobot;
 
-	public Board(List<IRobot> robots, double xSize, double ySize, IGraphicBoard graphicBoard, IRobot userRobot, List<INeuron> iaIn, List<INeuron> iaOut) {
+	public Board(List<IRobot> robots, double xSize, double ySize, IGraphicBoard graphicBoard, IRobot userRobot){//, List<INeuron> iaIn, List<INeuron> iaOut) {
 		this.robots = robots;
 		this.xSize = xSize;
 		this.ySize = ySize;
 		this.graphicBoard = graphicBoard;
-		this.iaIn = iaIn;
-		this.iaOut = iaOut;
+//		this.iaIn = iaIn;
+//		this.iaOut = iaOut;
 		this.userRobot = userRobot;
 		graphicBoard.setParameters(this, userRobot);
 		
@@ -45,9 +47,16 @@ public class Board extends TimerTask implements IBoard, Observer{
 	@Override
 	public void compute() {
 		//Call ia
-		iaAction();
+//		iaAction();
 		
-		
+		for(Entity ent : Launch.managedEntities) {
+			if(ent.getManagedRobot().getLife()<=0) continue;
+			IRobot target = null;
+			for(IRobot robot : robots) {
+				if(robot!=ent.getManagedRobot() &&((target==null) || (Launch.squareDistance(robot.getPosition(), ent.getManagedRobot().getPosition())<Launch.squareDistance(target.getPosition(), ent.getManagedRobot().getPosition())))) target = robot;
+			}
+			if(target!=null)ent.update(target);
+		}
 		
 		
 		List<IRobot> copyRobots = new ArrayList<IRobot>(robots);
@@ -57,8 +66,11 @@ public class Board extends TimerTask implements IBoard, Observer{
 			double y = position[1];
 			x +=robot.getAccel()*Math.cos(robot.getAngle());
 			y +=robot.getAccel()*Math.sin(robot.getAngle());
-			x = x > xSize ? x - xSize : (x < 0 ? x+xSize : x);
-			y = y > ySize ? y - ySize : (y < 0 ? y+ySize : y);
+//			x = x > xSize ? x - xSize : (x < 0 ? x+xSize : x);
+//			y = y > ySize ? y - ySize : (y < 0 ? y+ySize : y);
+
+			x = x > xSize ? xSize : (x < 0 ? 0 : x);
+			y = y > ySize ? ySize : (y < 0 ? 0 : y);
 			
 			boolean collide = false;
 			//No collisions
@@ -102,47 +114,47 @@ public class Board extends TimerTask implements IBoard, Observer{
 		graphicBoard.update(fireringRobots);
 	}
 
-	private void iaAction() {
-		InputNeuron inputXDiff = (InputNeuron) iaIn.get(0);
-		InputNeuron inputYDiff = (InputNeuron) iaIn.get(1);
-		InputNeuron computerAngle = (InputNeuron) iaIn.get(2);
-		
-		CalculationNeuron space = (CalculationNeuron) iaOut.get(0);
-		
-		for(IRobot robot : robots) {
-			if(robot!=userRobot) {
-				inputXDiff.setValue(userRobot.getPosition()[0]-robot.getPosition()[0]);
-				inputYDiff.setValue(userRobot.getPosition()[1]-robot.getPosition()[1]);
-				computerAngle.setValue(robot.getAngle());
-				
-				//Action to make 
-				if(space.getOut()>0.5) {
-					robot.fire();
-					drawFire(robot);
-				}
-				
-//				int xDiff = (int) (userRobot.getPosition()[0]-robot.getPosition()[0]);
-//				int yDiff = (int) (userRobot.getPosition()[1]-robot.getPosition()[1]);
-//				double distance = Math.sqrt(xDiff*xDiff+yDiff*yDiff);
-//				double angle = robot.getAngle();
-//				double xCoinc = distance*Math.cos(angle);
-//				double yCoinc = distance*Math.sin(angle);
+//	private void iaAction() {
+//		InputNeuron inputXDiff = (InputNeuron) iaIn.get(0);
+//		InputNeuron inputYDiff = (InputNeuron) iaIn.get(1);
+//		InputNeuron computerAngle = (InputNeuron) iaIn.get(2);
+//		
+//		CalculationNeuron space = (CalculationNeuron) iaOut.get(0);
+//		
+//		for(IRobot robot : robots) {
+//			if(robot!=userRobot) {
+//				inputXDiff.setValue(userRobot.getPosition()[0]-robot.getPosition()[0]);
+//				inputYDiff.setValue(userRobot.getPosition()[1]-robot.getPosition()[1]);
+//				computerAngle.setValue(robot.getAngle());
 //				
-//				double[] coinc = {xCoinc,yCoinc};
-//				double[] positionCible = {xDiff,yDiff};
+//				//Action to make 
+//				if(space.getOut()>0.5) {
+//					robot.fire();
+//					drawFire(robot);
+//				}
 //				
-//				if(squareDistance(coinc, positionCible)<robot.getRobotRadius()*robot.getRobotRadius()) {
-//					System.out.println("Booom ! "+space.getOut());
-//				}
-//				else {
-//					System.out.println(space.getOut());
-//				}
-
-			}
-		}
-		
-		
-	}
+////				int xDiff = (int) (userRobot.getPosition()[0]-robot.getPosition()[0]);
+////				int yDiff = (int) (userRobot.getPosition()[1]-robot.getPosition()[1]);
+////				double distance = Math.sqrt(xDiff*xDiff+yDiff*yDiff);
+////				double angle = robot.getAngle();
+////				double xCoinc = distance*Math.cos(angle);
+////				double yCoinc = distance*Math.sin(angle);
+////				
+////				double[] coinc = {xCoinc,yCoinc};
+////				double[] positionCible = {xDiff,yDiff};
+////				
+////				if(squareDistance(coinc, positionCible)<robot.getRobotRadius()*robot.getRobotRadius()) {
+////					System.out.println("Booom ! "+space.getOut());
+////				}
+////				else {
+////					System.out.println(space.getOut());
+////				}
+//
+//			}
+//		}
+//		
+//		
+//	}
 
 	private double squareDistance(double[] p1, double[] p2) {
 		return (p1[0]-p2[0])* (p1[0]-p2[0])+ (p1[1]-p2[1])* (p1[1]-p2[1]);
@@ -196,7 +208,11 @@ public class Board extends TimerTask implements IBoard, Observer{
 					if(squareDistance(coinc, robotCible.getPosition())<robotCible.getRobotRadius()*robotCible.getRobotRadius()) {
 						int life = robotCible.getLife();
 						//1 damage
-						robotCible.setLife(life-1);
+						if(robot.getBrain()!=null) robot.getBrain().score++;
+						robotCible.setLife(life-2);
+						
+						//leeech
+						robot.setLife(robot.getLife()+1);
 					}
 				}
 			}

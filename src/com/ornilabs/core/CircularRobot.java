@@ -2,6 +2,8 @@ package com.ornilabs.core;
 
 import java.util.Observable;
 
+import com.ornilabs.neurons.Entity;
+
 public class CircularRobot extends Observable implements IRobot{
 
 	private double x;
@@ -18,12 +20,13 @@ public class CircularRobot extends Observable implements IRobot{
 	private double robotAccelStep;
 	private int maxLife;
 	private boolean firering;
+	private Entity brain;
 
-	public CircularRobot(double x, double y, double angle, double robotAccelStep, double robotMaxAccel, int life) {
+	public CircularRobot(double x, double y, double angle, double robotAccelStep, double robotMaxAccel, int life, double radius) {
 		this.x = x;
 		this.y = y;
 		this.angle = angle;
-		this.robotRadius = 20;
+		this.robotRadius = radius;
 		this.robotAccel = 0;
 		this.robotMaxSpeed = robotMaxAccel;
 		this.life = life;
@@ -112,6 +115,21 @@ public class CircularRobot extends Observable implements IRobot{
 	@Override
 	public int getMaxLife() {
 		return maxLife;
+	}
+
+	@Override
+	public double getMaxAccel() {
+		return robotMaxSpeed;
+	}
+
+	@Override
+	public void registerBrain(Entity brain) {
+		this.brain = brain;
+	}
+
+	@Override
+	public Entity getBrain() {
+		return brain;
 	}
 
 }
