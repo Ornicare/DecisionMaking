@@ -30,29 +30,37 @@ public class DrawF extends JPanel{
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		
-		double a = robot.getRobotRadius();
-
+		double a = 100;
+		double prec = 1000;
 		Graphics2D g2d = (Graphics2D) g;
-		for(int x = (int) -xSize ; x < xSize ; x+=xSize/100) {
-			for(int y = (int) -ySize ; y < ySize ; y+=ySize/100) {
-
-				double[] results = Launch.f(x, y, a);
+		for(int x = (int) -xSize ; x < xSize ; x+=xSize/prec) {
+			for(int y = (int) -ySize ; y < ySize ; y+=ySize/prec) {
+				double[] result = {x,y};
+				//Shoot zone
 				if(x>0 && Math.abs(y)<a) {
+					result[1] = Math.tan(y/a*Math.PI/2);
 					g2d.setColor(Color.RED);
 				}
 				else if(x>0 && y>=a) {
+					result[0] = -x;
+					result[1] = Math.atan(y-a)*a/Math.PI*2;
 					g2d.setColor(Color.BLUE);
 				}
 				else if(x>0 && y<=-a) {
+					result[0] = -x;
+					result[1] = Math.atan(y+a)*a/Math.PI*2;
 					g2d.setColor(Color.YELLOW);
 				}
-				else if(x<0 && y>0) {
+				else if(x<=0 && y>0) {
 					g2d.setColor(Color.GREEN);
+					result[1] = y+a;
 				}
-				else if(x<0 && y<0) {
-					g2d.setColor(Color.ORANGE);
+				else if(x<=0 && y<=0) {
+					g2d.setColor(Color.BLACK);
+					result[1] = y-a;
 				}
-				Rectangle2D.Double rect= new Rectangle2D.Double(results[0]-xSize/100/2+xSize/2, ySize/2+results[1]-ySize/100/2, xSize/100, ySize/100);
+				
+				Rectangle2D.Double rect= new Rectangle2D.Double(result[0]-xSize/prec/2+xSize/2, ySize/2+result[1]-ySize/prec/2, xSize/prec, ySize/prec);
 				g2d.fill(rect);
 			}
 			

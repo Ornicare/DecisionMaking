@@ -39,7 +39,13 @@ public class DrawResults extends JPanel{
 			int x = set[0].intValue();
 			int y = set[1].intValue();
 			
-			double result = results.get(set);
+			double[] f = Launch.f(set[0],set[1],robot.getRobotRadius());
+//			double[] input = {(double) f[0],(double) f[1]};//,angle};
+			
+			double[] input = {set[0],set[1]};
+			double[] result2 = Launch.mlp.classify(input);
+			
+			double result = result2[0];//results.get(set);
 			
 			g2d.setColor(new Color((float)(result), (float)(result), (float)(result)));
 			Rectangle2D.Double rect= new Rectangle2D.Double(xSize/2+x-pas/2, ySize/2+y-pas/2, pas, pas);

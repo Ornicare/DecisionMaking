@@ -18,7 +18,11 @@ import com.ornilabs.neurons.CalculationNeuron;
 import com.ornilabs.neurons.INeuron;
 import com.ornilabs.neurons.InputNeuron;
 
+import exemples.MultiLayerPerceptron;
+
 public class Launch {
+	public static MultiLayerPerceptron mlp;
+
 	public static void main(String[] args) {
 		
 		
@@ -26,6 +30,9 @@ public class Launch {
 		
 		double xSize = 1000;
 		double ySize = 1000;
+//		
+//		mlp = new MultiLayerPerceptron(3, 5, 1, 10, 1);
+		mlp = new MultiLayerPerceptron(2, 10, 1, 5, 10);
 		
 		
 //		//draw f
@@ -34,6 +41,9 @@ public class Launch {
 //		frame1.setBounds(0,0,(int)xSize,(int)ySize);
 //		frame1.add(drawF);
 //		frame1.setVisible(true);
+		
+//		boolean val = true;
+//		if(val) return;
 //		
 		
 		IRobot robot = new CircularRobot(100, 200, 0, 0.1, 10, Integer.MAX_VALUE);
@@ -54,31 +64,59 @@ public class Launch {
 		
 		HashMap<Double[], Double> results = new HashMap<Double[], Double>();
 		
+		int i = 0;
+		
 		/*
 		 * First test : fire only
 		 */
 		for(int xDiff = (int) -xSize ; xDiff < xSize ; xDiff+=xSize/100) {
 			for(int yDiff = (int) -ySize ; yDiff < ySize ; yDiff+=ySize/100) {
-				for(double angle = 0 ; angle < 360 ; angle+=360/100.0) {
-//					double distance = Math.sqrt(xDiff*xDiff+yDiff*yDiff);
-//					double xCoinc = distance*Math.cos(angle);
-//					double yCoinc = distance*Math.sin(angle);
+//				for(double angle = 0 ; angle < 360 ; angle+=360/100.0) {
+					
+					double angle = 0;
+					
+////					double distance = Math.sqrt(xDiff*xDiff+yDiff*yDiff);
+////					double xCoinc = distance*Math.cos(angle);
+////					double yCoinc = distance*Math.sin(angle);
+////					
+////					double[] coinc = {xCoinc,yCoinc};
+////					double[] positionCible = {xDiff,yDiff};
 //					
-//					double[] coinc = {xCoinc,yCoinc};
-//					double[] positionCible = {xDiff,yDiff};
+//					Double[] set = {(double) xDiff,(double) yDiff,angle};
+//					Boolean[] result = {false,false,false,false,false};
+//					
+//					//plan transformé
+//					if(xDiff<0 && Math.abs(yDiff)<robot.getRobotRadius()) result[4] = true;
+////					if(squareDistance(coinc, positionCible)<robot.getRobotRadius()*robot.getRobotRadius()) {
+////						result[4] = true;
+////					}
+//
+//					learningSet.put(set, result);
+					
+					double distance = Math.sqrt(xDiff*xDiff+yDiff*yDiff);
+					double xCoinc = distance*Math.cos(angle);
+					double yCoinc = distance*Math.sin(angle);
+					
+					double[] coinc = {xCoinc,yCoinc};
+					double[] positionCible = {xDiff,yDiff};
 					
 					Double[] set = {(double) xDiff,(double) yDiff,angle};
 					Boolean[] result = {false,false,false,false,false};
 					
-					//plan transformé
-					if(xDiff<0 && Math.abs(yDiff)<robot.getRobotRadius()) result[4] = true;
-//					if(squareDistance(coinc, positionCible)<robot.getRobotRadius()*robot.getRobotRadius()) {
-//						result[4] = true;
-//					}
+					if(squareDistance(coinc, positionCible)<robot.getRobotRadius()*robot.getRobotRadius()) {
+						result[4] = true;
+					}
 
 					learningSet.put(set, result);
 					
-				}
+					double[] f = f(xDiff,yDiff,robot.getRobotRadius());
+					double[] input = {(double) xDiff,(double) yDiff};//,angle};
+//					double[] input = {(double) f[0],(double) f[1]};//,angle};
+					double[] target = {result[4] ?1:0};
+//					System.out.println(i++);
+					mlp.train(input, target);
+					
+//				}
 			}
 		}
 		
@@ -219,10 +257,10 @@ public class Launch {
 			result[0] = -x;
 			result[1] = Math.atan(y+a)*a/Math.PI*2;
 		}
-		else if(x<0 && y>0) {
+		else if(x<=0 && y>0) {
 			result[1] = y+a;
 		}
-		else if(x<0 && y<0) {
+		else if(x<=0 && y<0) {
 			result[1] = y-a;
 		}
 		return result;
