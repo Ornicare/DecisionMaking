@@ -43,7 +43,7 @@ public class GraphicBoard extends JFrame implements IGraphicBoard, KeyListener {
 				((int) height / 2 - board.getYSize() / 2), board.getXSize()+100,
 				board.getYSize()+100);
 
-		panel = new BoardPanel(board);
+		panel = new BoardPanel(board,board.getXSize(),board.getYSize());
 //		getContentPane().setLayout(null);
 //
 		getContentPane().add(panel);

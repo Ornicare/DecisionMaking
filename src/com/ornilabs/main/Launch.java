@@ -1,29 +1,22 @@
 package com.ornilabs.main;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import javax.swing.JFrame;
 
 import com.ornilabs.core.Board;
 import com.ornilabs.core.CircularRobot;
-import com.ornilabs.core.DrawF;
-import com.ornilabs.core.DrawResults;
 import com.ornilabs.core.GraphicBoard;
 import com.ornilabs.core.IRobot;
-import com.ornilabs.neurons.CalculationNeuron;
-import com.ornilabs.neurons.Entity;
-import com.ornilabs.neurons.INeuron;
-import com.ornilabs.neurons.InputNeuron;
+import com.ornilabs.neurons.EntityFood;
+import com.ornilabs.neurons.Food;
+import com.ornilabs.neurons.IEntity;
 
 import exemples.MultiLayerPerceptron;
 
 public class Launch {
 	public static MultiLayerPerceptron mlp;
-	public static ArrayList<Entity> managedEntities;
+	public static ArrayList<IEntity> managedEntities;
 
 	public static void main(String[] args) {
 		
@@ -60,14 +53,21 @@ public class Launch {
 //		robots.add(robot);
 //		robots.add(robotCible);
 //		
-		managedEntities = new ArrayList<Entity>();
+		managedEntities = new ArrayList<IEntity>();
 //		managedEntities.add(new Entity(robotCible));
 //		
-		for(int i = 0 ; i < 100 ; ++i) {
-			IRobot robotCible = new CircularRobot(xSize*Math.random(), ySize*Math.random(), Math.random()*Math.PI*2, 0.1, 1, 10000, 3);
+		for(int i = 0 ; i < 10 ; ++i) {
+			IRobot robotCible = new CircularRobot(xSize*Math.random(), ySize*Math.random(), Math.random()*Math.PI*2, 0.1, 0.1, 10000, 3);
 			robots.add(robotCible);
 			
-			managedEntities.add(new Entity(robotCible));
+			managedEntities.add(new EntityFood(robotCible));
+//			
+		}
+		
+		ArrayList<Food> foodList = new ArrayList<Food>();
+		for(int i = 0 ; i < 1000 ; ++i) {
+			Food food = new Food(xSize*Math.random(), ySize*Math.random());
+			foodList.add(food);
 //			
 		}
 ////		
@@ -257,7 +257,7 @@ public class Launch {
 		//launch game
 
 		GraphicBoard graphicBoard = new GraphicBoard();
-		new Board(robots, xSize, ySize, graphicBoard, robot);
+		new Board(robots, xSize, ySize, graphicBoard, robot, foodList);
 	}
 	
 	public static double[] f(double x, double y, double a) {

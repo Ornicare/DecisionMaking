@@ -1,6 +1,11 @@
 package com.ornilabs.core;
 
-import com.ornilabs.neurons.Entity;
+import java.awt.Color;
+import java.util.List;
+
+import com.ornilabs.neurons.EntityFood;
+import com.ornilabs.neurons.IEntity;
+import com.ornilabs.neurons.Trace;
 
 public interface IRobot {
 	public boolean turn(double angle);
@@ -18,6 +23,11 @@ public interface IRobot {
 	boolean isFirering();
 	void setFirering(boolean firering);
 	public double getMaxAccel();
-	public void registerBrain(Entity entity);
-	public Entity getBrain();
+	public void registerBrain(IEntity entity);
+	public IEntity getBrain();
+	List<Trace> getTraceList();
+	void addTrace(Trace t);
+	Color getColor();
+	public void addScore();
+	public String getScore();
 }

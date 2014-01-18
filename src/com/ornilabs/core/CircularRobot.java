@@ -1,13 +1,19 @@
 package com.ornilabs.core;
 
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
 
-import com.ornilabs.neurons.Entity;
+import com.ornilabs.neurons.EntityFood;
+import com.ornilabs.neurons.IEntity;
+import com.ornilabs.neurons.Trace;
 
 public class CircularRobot extends Observable implements IRobot{
 
 	private double x;
 	private double y;
+	private List<Trace> traceList;
 	
 	/**
 	 * angle € [-pi,pi]
@@ -20,20 +26,34 @@ public class CircularRobot extends Observable implements IRobot{
 	private double robotAccelStep;
 	private int maxLife;
 	private boolean firering;
-	private Entity brain;
+	private IEntity brain;
+	private Color color;
+	private int score = 0;
 
 	public CircularRobot(double x, double y, double angle, double robotAccelStep, double robotMaxAccel, int life, double radius) {
 		this.x = x;
 		this.y = y;
 		this.angle = angle;
 		this.robotRadius = radius;
-		this.robotAccel = 0;
+		this.robotAccel = robotMaxAccel;
 		this.robotMaxSpeed = robotMaxAccel;
 		this.life = life;
 		this.robotAccelStep = robotAccelStep;
 		this.maxLife = life;
+		traceList = new ArrayList<Trace>();
+		this.setColor(new Color((float)Math.random(),(float)Math.random(),(float)Math.random()));
 	}
 	
+	@Override
+	public List<Trace> getTraceList() {
+		return traceList;
+	}
+	
+	@Override
+	public void addTrace(Trace t) {
+		traceList.add(t);
+	}
+
 	@Override
 	public int getLife() {
 		return life;
@@ -61,9 +81,9 @@ public class CircularRobot extends Observable implements IRobot{
 	 */
 	@Override
 	public boolean fire() {
-		this.firering = true;
-		setChanged();
-		notifyObservers();
+//		this.firering = true;
+//		setChanged();
+//		notifyObservers();
 		return true;
 	}
 
@@ -81,7 +101,7 @@ public class CircularRobot extends Observable implements IRobot{
 	public double accel(double dir) {
 		dir = dir > 0 ? 1 : (dir < 0 ? -1 : 0);
 		robotAccel+=dir*robotAccelStep;
-		robotAccel = robotAccel>robotMaxSpeed ? robotMaxSpeed : (-robotAccel>robotMaxSpeed ? -robotMaxSpeed : robotAccel);
+		robotAccel = robotAccel>robotMaxSpeed ? robotMaxSpeed : (-robotAccel>0 ? 0 : robotAccel);
 		return robotAccel;
 	}
 
@@ -123,13 +143,32 @@ public class CircularRobot extends Observable implements IRobot{
 	}
 
 	@Override
-	public void registerBrain(Entity brain) {
+	public void registerBrain(IEntity brain) {
 		this.brain = brain;
 	}
 
 	@Override
-	public Entity getBrain() {
+	public IEntity getBrain() {
 		return brain;
+	}
+
+	@Override
+	public Color getColor() {
+		return color;
+	}
+
+	public void setColor(Color color) {
+		this.color = color;
+	}
+
+	@Override
+	public void addScore() {
+		score++;
+	}
+
+	@Override
+	public String getScore() {
+		return ""+score;
 	}
 
 }

@@ -1,22 +1,28 @@
 package com.ornilabs.core;
 
+import java.awt.Color;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import com.ornilabs.main.Launch;
 import com.ornilabs.neurons.CalculationNeuron;
-import com.ornilabs.neurons.Entity;
+import com.ornilabs.neurons.Food;
+import com.ornilabs.neurons.IEntity;
 import com.ornilabs.neurons.INeuron;
 import com.ornilabs.neurons.InputNeuron;
+import com.ornilabs.neurons.Trace;
 
 public class Board extends TimerTask implements IBoard, Observer{
-	private List<IRobot> robots;
+	public static List<IRobot> robots;
 	private double xSize;
 	private double ySize;
 	private IGraphicBoard graphicBoard;
@@ -25,8 +31,9 @@ public class Board extends TimerTask implements IBoard, Observer{
 //	private List<INeuron> iaIn;
 //	private List<INeuron> iaOut;
 	private IRobot userRobot;
+	public ArrayList<Food> foodList;
 
-	public Board(List<IRobot> robots, double xSize, double ySize, IGraphicBoard graphicBoard, IRobot userRobot){//, List<INeuron> iaIn, List<INeuron> iaOut) {
+	public Board(List<IRobot> robots, double xSize, double ySize, IGraphicBoard graphicBoard, IRobot userRobot, ArrayList<Food> foodList){//, List<INeuron> iaIn, List<INeuron> iaOut) {
 		this.robots = robots;
 		this.xSize = xSize;
 		this.ySize = ySize;
@@ -34,10 +41,13 @@ public class Board extends TimerTask implements IBoard, Observer{
 //		this.iaIn = iaIn;
 //		this.iaOut = iaOut;
 		this.userRobot = userRobot;
+		this.foodList = foodList;
 		graphicBoard.setParameters(this, userRobot);
+
 		
 		timer = new Timer();
-		timer.scheduleAtFixedRate(this, 0, 1000 / 60);
+//		timer.scheduleAtFixedRate(this, 0, 1000 / 60);
+		timer.scheduleAtFixedRate(this, 0, 1);
 		
 		for(IRobot robot : robots) {
 			((Observable)robot).addObserver(this);
@@ -49,14 +59,41 @@ public class Board extends TimerTask implements IBoard, Observer{
 		//Call ia
 //		iaAction();
 		
-		for(Entity ent : Launch.managedEntities) {
-			if(ent.getManagedRobot().getLife()<=0) continue;
-			IRobot target = null;
-			for(IRobot robot : robots) {
-				if(robot!=ent.getManagedRobot() &&((target==null) || (Launch.squareDistance(robot.getPosition(), ent.getManagedRobot().getPosition())<Launch.squareDistance(target.getPosition(), ent.getManagedRobot().getPosition())))) target = robot;
+		Set<Food> toRemove = new HashSet<Food>();
+		for(Food food : new ArrayList<Food>(getFoodList())) {
+			double[] foodPos = {food.getX(),food.getY()};
+		
+			for(IRobot robot : getRobots()) {
+				if(!food.isConsumed() && Launch.squareDistance(robot.getPosition(), foodPos)<robot.getRobotRadius()*robot.getRobotRadius()) {
+					food.consume();
+					toRemove.add(food);
+					robot.addScore();
+				}
 			}
-			if(target!=null)ent.update(target);
 		}
+		List<Food> currentFood = getFoodList();
+		for(Food food : toRemove) {
+			currentFood.remove(food);
+//			currentFood.add(new Food(xSize*Math.random(), ySize*Math.random()));
+		}
+		setFoodList(currentFood);
+		
+		for(IEntity ent : Launch.managedEntities) {
+			if(ent.getManagedRobot().getLife()<=0) continue;
+//			Food target = null;
+//			for(Food food : new ArrayList<Food>(getFoodList())) {
+//				if(food==null) continue;
+//				double[] foodPosition = {food.getX(),food.getY()};
+//				double[] targetPosition = {0,0};
+//				if(target!=null) {targetPosition[0]=target.getX();targetPosition[1]=target.getY();}
+//				if(((target==null) || (Launch.squareDistance(foodPosition, ent.getManagedRobot().getPosition())<Launch.squareDistance(targetPosition, ent.getManagedRobot().getPosition())))) target = food;
+//			}
+			
+//			if(target!=null)
+				ent.update(new ArrayList<Food>(getFoodList()));
+		}
+		
+		
 		
 		
 		List<IRobot> copyRobots = new ArrayList<IRobot>(robots);
@@ -64,6 +101,9 @@ public class Board extends TimerTask implements IBoard, Observer{
 			double[] position = robot.getPosition();
 			double x = position[0];
 			double y = position[1];
+			
+			
+			robot.addTrace(new Trace(x, y));
 			x +=robot.getAccel()*Math.cos(robot.getAngle());
 			y +=robot.getAccel()*Math.sin(robot.getAngle());
 //			x = x > xSize ? x - xSize : (x < 0 ? x+xSize : x);
@@ -156,7 +196,7 @@ public class Board extends TimerTask implements IBoard, Observer{
 //		
 //	}
 
-	private double squareDistance(double[] p1, double[] p2) {
+	public static double squareDistance(double[] p1, double[] p2) {
 		return (p1[0]-p2[0])* (p1[0]-p2[0])+ (p1[1]-p2[1])* (p1[1]-p2[1]);
 	}
 
@@ -187,36 +227,49 @@ public class Board extends TimerTask implements IBoard, Observer{
 
 	@Override
 	public void update(Observable arg0, Object arg1) {
-		IRobot robot = (IRobot) arg0;
-		if(robot.isFirering()) {
-			robot.setFirering(false);
-			
-			//Applying damages to targets
-			//TODO instant damages
-			for(IRobot robotCible : robots) {
-				if(robot!=robotCible) {
-					//angle between to robots
-//					double theta = Math.atan((robotCible.getPosition()[0]-robot.getPosition()[0])/(robotCible.getPosition()[1]-robot.getPosition()[1]));
-					
-					double fireringAngle = robot.getAngle();
-					double distance = Math.sqrt(squareDistance(robot.getPosition(), robotCible.getPosition()));
-					double xCoinc = robot.getPosition()[0]+distance*Math.cos(fireringAngle);
-					double yCoinc = robot.getPosition()[1]+distance*Math.sin(fireringAngle);
-					
-					double[] coinc = {xCoinc,yCoinc};
-					
-					if(squareDistance(coinc, robotCible.getPosition())<robotCible.getRobotRadius()*robotCible.getRobotRadius()) {
-						int life = robotCible.getLife();
-						//1 damage
-						if(robot.getBrain()!=null) robot.getBrain().score++;
-						robotCible.setLife(life-2);
-						
-						//leeech
-						robot.setLife(robot.getLife()+1);
-					}
-				}
-			}
-			
-		}
+//		IRobot robot = (IRobot) arg0;
+//		if(robot.isFirering()) {
+//			robot.setFirering(false);
+//			
+//			//Applying damages to targets
+//			//TODO instant damages
+//			for(IRobot robotCible : robots) {
+//				if(robot!=robotCible) {
+//					//angle between to robots
+////					double theta = Math.atan((robotCible.getPosition()[0]-robot.getPosition()[0])/(robotCible.getPosition()[1]-robot.getPosition()[1]));
+//					
+//					double fireringAngle = robot.getAngle();
+//					double distance = Math.sqrt(squareDistance(robot.getPosition(), robotCible.getPosition()));
+//					double xCoinc = robot.getPosition()[0]+distance*Math.cos(fireringAngle);
+//					double yCoinc = robot.getPosition()[1]+distance*Math.sin(fireringAngle);
+//					
+//					double[] coinc = {xCoinc,yCoinc};
+//					
+//					if(squareDistance(coinc, robotCible.getPosition())<robotCible.getRobotRadius()*robotCible.getRobotRadius()) {
+//						int life = robotCible.getLife();
+//						//1 damage
+//						if(robot.getBrain()!=null) {
+////							robot.getBrain().score++;
+////							robot.getBrain().lastFireringStrike=true;
+//						}
+//						robotCible.setLife(life-2);
+//						
+//						//leeech
+//						robot.setLife(robot.getLife()+1);
+//					}
+//				}
+//			}
+//			
+//		}
+	}
+
+	@Override
+	public synchronized List<Food> getFoodList() {
+		return foodList;
+	}
+
+	@Override
+	public void setFoodList(List<Food> currentFood) {
+		foodList = (ArrayList<Food>) currentFood;
 	}
 }
